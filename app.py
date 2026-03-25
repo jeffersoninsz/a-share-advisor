@@ -34,6 +34,37 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ============ 动态背景加载 ============
+import base64
+from pathlib import Path
+
+@st.cache_data
+def get_base64_of_bin_file(bin_file):
+    try:
+        with open(bin_file, 'rb') as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except Exception:
+        return ""
+
+bg_base64 = get_base64_of_bin_file('assets/bg1.png')
+if bg_base64:
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(20, 18, 15, 0.85) 0%, rgba(5, 5, 5, 0.98) 100%),
+                url("data:image/png;base64,{bg_base64}") !important;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
 # ============ 自定义 CSS (黑金赛博羊皮纸) ============
 st.markdown("""
 <style>
@@ -47,9 +78,6 @@ html, body, [class*="st-"] {
 /* 全局背景: 暗黑羊皮纸质感 */
 .stApp {
     background-color: #0a0908 !important;
-    background-image: 
-        radial-gradient(circle at 50% 50%, rgba(20, 18, 15, 0.9) 0%, rgba(5, 5, 5, 1) 100%),
-        url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.03"/></svg>') !important;
     color: #d4c4a8;
 }
 

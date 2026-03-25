@@ -262,6 +262,35 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ---
 
+## 🚀 部署到云服务器
+
+本项目基于 Streamlit，部署方案需要特别注意平台限制：
+
+### ❌ 关于 Vercel 部署 (不推荐)
+
+虽然 Vercel 极其流行，但**它并不适合运行 Streamlit 应用**。原因如下：
+1. **网络底层协议**：Streamlit 强依赖于 WebSocket 进行前后端长连接通信，而 Vercel 的 Serverless Functions 不支持长连接 WebSocket。
+2. **执行超时限制**：Vercel 免费版 (Hobby) Serverless 函数最大超时时间为 **10秒**（Pro版 60秒）。而本系统 AI 分析全套流程通常需要 **2到3分钟**（含多个工具调用），在 Vercel 上运行时必定触发 Timeout 错误，导致分析中断。
+
+> **结论**: 如果强制通过 `vercel.json` 结合 `vercel-python` 打包器部署到 Vercel，您会看到静态页面，但在点击“运行分析”时会报错 `504 Gateway Timeout` 或 WebSocket 连接失败。
+
+### ✅ 推荐部署方案
+
+推荐使用支持 Docker 或长连接容器服务的云平台：
+
+**方案一：Streamlit Community Cloud (免费、最简单)**
+1. 将本项目推送到您的 GitHub 并在根目录包含 `requirements.txt`。
+2. 登录 [share.streamlit.io](https://share.streamlit.io/)。
+3. 点击 "New app"，选择对应的 GitHub 仓库和 `app.py`。
+4. 在应用部署前的高级设置中，填入 `.env` 中的 `ANTHROPIC_API_KEY` 环境变量。
+
+**方案二：Render 或 Zeabur**
+1. 在项目根目录创建 `Dockerfile`。
+2. 将代码推送到 GitHub，在 Render/Zeabur 中选择创建 Web Service。
+3. 设置环境变量 `ANTHROPIC_API_KEY`。
+
+---
+
 ## 技术架构
 
 ```

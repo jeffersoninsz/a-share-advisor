@@ -20,6 +20,21 @@
 
 ---
 
+## 三、部署与展示规范
+
+### 1. 前端 UI (Streamlit)
+- **视觉风格**：深色模式 (Dark Theme)、赛博黑金 (Cyberpunk Gold) 结合羊皮纸纹理 (Parchment background)。
+- **布局约束**：
+  - 侧边栏按钮必须可见（禁止 `header {visibility: hidden;}` 等误杀 CSS）。
+  - 响应式适配：移动端 (≤768px) 下，卡片与图表内容必须添加 `word-wrap: break-word;` 与额外的 padding 以防止重叠错位。
+
+### 2. Vercel 与云端部署架构
+- **Vercel Serverless 限制**：由于 Vercel Serverless Function 原生不支持 WebSocket 以及云函数的运行时长有严格限制 (10~60秒)，直接部署 Streamlit `.py` 是无效的（会陷入 Infinite Gateway Timeout）。
+- **落地策略**：我们在 `api/index.py` 中注入了 FastAPI 的降级回退机制（Fallback HTML），向 Vercel 访客声明此处为 API 网关，并通过页面引导其转向 GitHub 或 Render/Zeabur 获取完整的长连接推演大屏体验。
+- **推荐部署环境**：长连接/容器化云服务，如 Render Web Service, Zeabur, 或 Streamlit Community Cloud。
+
+---
+
 ## 🧠 核心设计决策
 
 1. **只推荐不交易**: 系统仅输出分析报告和推荐，最终买卖由用户自行决策

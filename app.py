@@ -47,7 +47,7 @@ def get_base64_of_bin_file(bin_file):
     except Exception:
         return ""
 
-bg_base64 = get_base64_of_bin_file('assets/bg1.png')
+bg_base64 = get_base64_of_bin_file('assets/bg_new.png')
 if bg_base64:
     st.markdown(
         f"""
@@ -81,9 +81,16 @@ html, body, [class*="st-"] {
     color: #d4c4a8;
 }
 
-/* 隐藏 Streamlit 默认的 Header 和 Footer */
-header {visibility: hidden;}
+/* 隐藏 Streamlit 默认的 Footer (不隐藏 header，保留侧边栏展开按钮) */
 footer {visibility: hidden;}
+
+/* 防止卡片和指标容器中的文字重叠 */
+div[data-testid="metric-container"] {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    padding: 10px !important;
+}
 
 /* 发光标题与文字隔离线 */
 h1, h2, h3 {

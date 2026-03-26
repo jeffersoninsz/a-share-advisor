@@ -62,7 +62,7 @@ from agent.brain import run_analysis
 
 # ============ 页面配置 ============
 st.set_page_config(
-    page_title="A股 AI 分析顾问",
+    page_title="王镇超级AI股票助手VER1",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -245,7 +245,7 @@ if "thinking_logs" not in st.session_state:
 
 
 # ============ 侧边栏导航 ============
-st.sidebar.title("📊 A股 AI 分析顾问")
+st.sidebar.title("📊 王镇超级AI股票助手VER1")
 st.sidebar.divider()
 
 page = st.sidebar.radio(
@@ -264,7 +264,7 @@ import os
 
 # ============ 📊 分析报告页 ============
 if page == "📊 分析报告":
-    st.title("A股 AI 分析顾问")
+    st.title("王镇超级AI股票助手VER1")
     # 保持界面简洁，移除顶部静态大图（改为仅使用全屏背景）
 
 

@@ -16,7 +16,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 # ============ Claude API 配置 ============
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_BASE_URL = os.getenv("ANTHROPIC_BASE_URL", "")  # 自定义 API 端点，留空则用官方默认
-CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-20250514")
+CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "anthropic/claude-3.5-sonnet")
 MAX_TOKENS = int(os.getenv("MAX_TOKENS", "4096"))
 
 # ============ 数据采集参数 ============

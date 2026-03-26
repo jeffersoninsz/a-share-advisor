@@ -98,8 +98,8 @@ st.markdown(f"""
 /* 古典衬线与神秘感字体 */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;700&display=swap');
 
-/* 全局字体 */
-html, body, [class*="st-"] {{
+/* 全局字体：排除系统图标，防止 arrow_right 等源码泄漏 */
+html, body, [class*="st-"]:not(.stIcon):not(.material-icons):not(.material-symbols-rounded) {{
     font-family: 'Noto Serif SC', 'Cinzel', serif;
 }}
 

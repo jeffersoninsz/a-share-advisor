@@ -81,18 +81,25 @@ def get_base64_of_bin_file(bin_file):
     except Exception:
         return ""
 
-bg_base64 = get_base64_of_bin_file('assets/bg_premium.png')
+bg_base64 = get_base64_of_bin_file('assets/bg_new.png')
 if bg_base64:
     st.markdown(
         f"""
         <style>
         .stApp {{
             background-image: 
-                radial-gradient(circle at 50% 50%, rgba(20, 18, 15, 0.85) 0%, rgba(5, 5, 5, 0.98) 100%),
+                radial-gradient(circle at 50% 50%, rgba(20, 18, 15, 0.2) 0%, rgba(5, 5, 5, 0.6) 100%),
                 url("data:image/png;base64,{bg_base64}") !important;
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            background-size: cover !important;
+            background-position: center !important;
+            background-attachment: fixed !important;
+            background-blend-mode: overlay;
+        }}
+        /* 侧边栏也同步透明背景，露出底层背景图 */
+        [data-testid="stSidebar"] {{
+            background-color: rgba(5, 5, 5, 0.7) !important;
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(212, 175, 55, 0.2);
         }}
         </style>
         """,

@@ -92,48 +92,40 @@ if not bg_base64:
     bg_base64 = get_base64_of_bin_file('assets/bg_new.png')
     image_type = "bg_new"
 
-# ============ 自定义 CSS (黑金赛博羊皮纸) ============
+# ============ 自定义 CSS (黑金赛博) ============
 st.markdown(f"""
 <style>
-/* 注入信息用于调试: {image_type} */
-
 /* 古典衬线与神秘感字体 */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;700&display=swap');
 
-/* 全局透明化和字体 */
-html, body, [data-testid="stAppViewContainer"] {{
+/* 全局字体 */
+html, body, [class*="st-"] {{
     font-family: 'Noto Serif SC', 'Cinzel', serif;
-    color: #eaddc5;
-    background-color: #050505 !important;
 }}
 
-/* ============ 动态背景 & 核心容器 ============ */
-[data-testid="stAppViewContainer"] {{
+/* ============ 动态背景 ============ */
+.stApp {{
     background-image: 
-        radial-gradient(circle at 50% 50%, rgba(10, 8, 5, 0.8) 0%, rgba(5, 5, 5, 0.98) 100%),
+        radial-gradient(circle at 50% 50%, rgba(10, 8, 5, 0.75) 0%, rgba(5, 5, 5, 0.98) 100%),
         url("data:image/png;base64,{bg_base64}") !important;
     background-size: cover !important;
     background-position: center !important;
     background-attachment: fixed !important;
     background-repeat: no-repeat !important;
+    background-color: transparent !important;
 }}
 
-/* 清除可能遮挡背景的中间层 */
-[data-testid="stMain"], [data-testid="stAppViewMainArea"], .stApp {{
-    background: transparent !important;
-}}
-
-/* ============ 主内容玻璃拟态面板 (修复杂乱背景遮挡文字) ============ */
-.block-container, [data-testid="stMainBlockContainer"] {{
-    background: rgba(12, 10, 8, 0.85) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border: 1px solid rgba(212, 175, 55, 0.2) !important;
+/* ============ 主内容玻璃拟态面板 ============ */
+/* 不强制覆盖 padding，尊重 Streamlit 的移动端自适应 */
+.block-container {{
+    background: rgba(12, 10, 8, 0.8) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(212, 175, 55, 0.15) !important;
     border-radius: 12px !important;
-    padding: 3rem !important;
-    margin-top: 1rem !important;
+    margin-top: 2rem !important;
     margin-bottom: 2rem !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(212, 175, 55, 0.05) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
 }}
 
 /* 侧边栏及顶栏透明化处理 */
@@ -145,20 +137,16 @@ header[data-testid="stHeader"] {{
     background-color: rgba(8, 7, 7, 0.95) !important;
     backdrop-filter: blur(15px);
     border-right: 1px solid rgba(212, 175, 55, 0.3) !important;
-    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.9);
 }}
 
-/* 隐藏 Streamlit 自带的右上角工具栏，但保留侧边栏按钮容器 */
-[data-testid="stToolbar"], .stDeployButton, #MainMenu {{
+/* 隐藏 Streamlit 自带的工具栏与部署按钮，但坚决保留侧边栏展开按钮 */
+.stDeployButton, [data-testid="stToolbar"] {{
     display: none !important;
-    visibility: hidden !important;
 }}
-
 
 /* 发光标题特效 */
 h1, h2, h3 {{
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.6), 0 0 20px rgba(212, 175, 55, 0.3);
-    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
     font-weight: 600 !important;
     color: #f7e096 !important;
 }}
@@ -167,102 +155,59 @@ h1 {{
     border-bottom: 2px solid transparent;
     border-image: linear-gradient(90deg, transparent, #d4af37, transparent) 1;
     padding-bottom: 10px;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }}
 
 /* 容器与卡片边界：发光特效与毛玻璃 */
 div[data-testid="metric-container"], 
 div[data-testid="stExpander"], 
-div[data-baseweb="card"],
 .stAlert {{
-    background: rgba(18, 15, 12, 0.8) !important;
-    border: 1px solid rgba(212, 175, 55, 0.3) !important;
-    border-radius: 6px !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(212, 175, 55, 0.05) !important;
-    backdrop-filter: blur(10px) !important;
+    background: rgba(18, 15, 12, 0.85) !important;
+    border: 1px solid rgba(212, 175, 55, 0.25) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6) !important;
     color: #eaddc5 !important;
-    padding: 15px;
     transition: all 0.3s ease;
 }}
 
-.stAlert p {{
-    color: #eaddc5 !important;
-}}
-
-/* 多选框标签 (Tokens) 赛博化 */
-span[data-baseweb="tag"] {{
-    background-color: rgba(212, 175, 55, 0.15) !important;
-    border: 1px solid rgba(212, 175, 55, 0.5) !important;
-    color: #f7e096 !important;
-}}
-span[data-baseweb="tag"] span {{
-    color: #f7e096 !important;
-}}
-div[role="button"][aria-label="Clear all"] {{
-    display: none !important; /* hide default clear button which clashes */
-}}
-
-
 div[data-testid="stExpander"]:hover, div[data-testid="metric-container"]:hover {{
-    box-shadow: 0 4px 25px rgba(212, 175, 55, 0.2), inset 0 0 20px rgba(212, 175, 55, 0.1) !important;
-    border-color: rgba(212, 175, 55, 0.8) !important;
+    border-color: rgba(212, 175, 55, 0.6) !important;
     transform: translateY(-2px);
 }}
 
-/* 指标卡片（Metric）文字自适应与特效 */
-div[data-testid="metric-container"] {{
-    word-wrap: break-word !important;
-    overflow-wrap: break-word !important;
-    white-space: normal !important;
-}}
+/* 指标卡片文字 */
 div[data-testid="metric-container"] label {{
     color: #c4b59d !important;
-    font-weight: 600 !important;
 }}
 div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{
     color: #f7e096 !important;
-    text-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
-    font-size: 2rem !important;
-    font-weight: 700 !important;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
 }}
 
-/* 按钮的黑金霓虹脉冲效果 */
-button[kind="primary"], button[data-testid="baseButton-primary"] {{
-    background: linear-gradient(135deg, #1f1b13, #0a0908) !important;
+/* 按钮样式 */
+button[kind="primary"] {{
+    background: linear-gradient(135deg, #262116, #12100c) !important;
     border: 1px solid #d4af37 !important;
     color: #d4af37 !important;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: 700;
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2), inset 0 0 10px rgba(212, 175, 55, 0.1) !important;
-    position: relative;
-    overflow: hidden;
+    transition: all 0.3s ease;
+    font-weight: 600;
 }}
-
-button[kind="primary"]:hover, button[data-testid="baseButton-primary"]:hover {{
+button[kind="primary"]:hover {{
     background: linear-gradient(135deg, #d4af37, #b08d28) !important;
     color: #000 !important;
-    box-shadow: 0 0 25px rgba(212, 175, 55, 0.6), 0 0 50px rgba(212, 175, 55, 0.4) !important;
-    transform: translateY(-2px) scale(1.02);
-    text-shadow: none;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5) !important;
     border-color: #fff !important;
 }}
 
-/* 次要按钮也有发光浮动效果 */
-button[kind="secondary"], button[data-testid="baseButton-secondary"] {{
-    background: rgba(10, 9, 8, 0.5) !important;
-    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+button[kind="secondary"] {{
+    background: rgba(20, 18, 15, 0.6) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
     color: #d4af37 !important;
-    transition: all 0.3s ease;
-    letter-spacing: 1px;
 }}
-button[kind="secondary"]:hover, button[data-testid="baseButton-secondary"]:hover {{
-    background: rgba(212, 175, 55, 0.1) !important;
+button[kind="secondary"]:hover {{
+    background: rgba(212, 175, 55, 0.15) !important;
     border-color: #e5c158 !important;
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
     color: #fff !important;
-    transform: translateY(-1px);
 }}
 
 /* 分割线鎏金效果 */
@@ -270,49 +215,11 @@ hr {{
     border-bottom: 0 !important;
     height: 1px;
     background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.8), transparent) !important;
-    margin: 2.5em 0;
+    margin: 2em 0;
 }}
 
-/* 表格样式覆盖 */
-[data-testid="stDataFrame"] {{
-    border: 1px solid rgba(212, 175, 55, 0.4) !important;
-    border-radius: 4px;
-}}
-th {{
-    background-color: #1a1814 !important;
-    color: #f7e096 !important;
-    border-bottom: 1px solid #d4af37 !important;
-}}
-td {{
-    background-color: #0a0908 !important;
-    color: #eaddc5 !important;
-    border-bottom: 1px solid rgba(212,175,55,0.1) !important;
-}}
-
-/* 滚动条赛博化 */
-::-webkit-scrollbar {{
-    width: 6px;
-    height: 6px;
-}}
-::-webkit-scrollbar-track {{
-    background: #050505;
-}}
-::-webkit-scrollbar-thumb {{
-    background: rgba(212, 175, 55, 0.4);
-    border-radius: 3px;
-    }}
-    ::-webkit-scrollbar-thumb:hover {{
-        background: rgba(212, 175, 55, 0.9);
-        box-shadow: 0 0 15px #d4af37;
-    }}
-
-    /* 保护图标字体 */
-    [data-testid="stSidebar"] *, .stIcon, .material-icons {{
-        font-family: inherit;
-    }}
-
-    /* 隐藏 Footer */
-    footer {{visibility: hidden;}}
+/* 隐藏 Footer */
+footer {{visibility: hidden;}}
 </style>
 """, unsafe_allow_html=True)
 

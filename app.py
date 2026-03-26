@@ -139,8 +139,8 @@ header[data-testid="stHeader"] {{
     border-right: 1px solid rgba(212, 175, 55, 0.3) !important;
 }}
 
-/* 隐藏 Streamlit 自带的工具栏与部署按钮，但坚决保留侧边栏展开按钮 */
-.stDeployButton, [data-testid="stToolbar"] {{
+/* 仅隐藏 Deploy 和右上角菜单，绝对不隐藏整个 Header 或 Toolbar 影响侧边栏展开按钮 */
+.stDeployButton, [data-testid="stAppDeployButton"], #MainMenu, [data-testid="stHeaderActionElements"] {{
     display: none !important;
 }}
 

@@ -105,117 +105,93 @@ st.markdown("""
 /* 古典衬线与神秘感字体 */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;700&display=swap');
 
-/* 安全接管系统字体：避免使用通配符强覆盖底层 Icon 的原生字库 */
+/* 全局字体和背景 */
 html, body, .stApp {
     font-family: 'Noto Serif SC', 'Cinzel', serif;
-}
-/* 针对常见文本区块精准施加自定义字体 */
-p, h1, h2, h3, h4, h5, h6, li, label, div[data-testid="metric-container"] {
-    font-family: 'Noto Serif SC', 'Cinzel', serif !important;
+    background-color: #050505 !important;
+    color: #eaddc5;
 }
 
-/* 保护层：绝对禁止修改原生的材料图标字库，利用翻译静止属性归还 Streamlit 原有结构权利 */
-.material-icons, .material-symbols-rounded, .stIcon, [data-testid="stSidebarCollapsedControl"] svg, span[translate="no"], button[kind="header"] * {
+/* 保护 Material Icons */
+.material-icons, .material-symbols-rounded, .stIcon, span[translate="no"], button[kind="header"] * {
     font-family: "Material Symbols Rounded", "Material Icons", sans-serif !important;
 }
 
-/* 全局背景: 暗黑羊皮纸质感 */
+/* 动态赛博网格背景，叠加纯黑金渐变 */
 .stApp {
-    background-color: #0c0b0a !important;
-    color: #d4c4a8;
+    background: 
+        linear-gradient(rgba(5, 5, 5, 0.9), rgba(5, 5, 5, 0.95)),
+        url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="100" y2="100" stroke="%23d4af37" stroke-width="0.5" stroke-opacity="0.1"/><line x1="100" y1="0" x2="0" y2="100" stroke="%23d4af37" stroke-width="0.5" stroke-opacity="0.1"/></svg>') !important;
+    background-size: 15px 15px !important;
+    background-attachment: fixed !important;
 }
 
-/* 强行接管由于原皮白色导致的侧边栏违和白块，使其融入黑金环境 */
+/* 侧边栏及顶栏深色化，去除 Streamlit 默认白边 */
 [data-testid="stSidebar"] {
-    background-color: #0c0b0a !important;
-    border-right: 1px solid #4a3e2a !important;
+    background-color: rgba(8, 7, 7, 0.95) !important;
+    border-right: 1px solid rgba(212, 175, 55, 0.3) !important;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.9);
 }
-
-/* 使 Header 横幅融入背景，防止 Streamlit 白色顶栏破坏赛博沉浸感 */
 [data-testid="stHeader"] {
     background-color: transparent !important;
 }
 
-/* 隐藏 Streamlit 默认的 Footer */
-footer {visibility: hidden;}
-
-/* 防止卡片和指标容器中的文字重叠 */
-div[data-testid="metric-container"] {
-    word-wrap: break-word !important;
-    overflow-wrap: break-word !important;
-    white-space: normal !important;
-    padding: 10px !important;
-}
-
-/* 强制显示左上角侧边栏展开折叠按钮，避免融入背景消失 */
-[data-testid="collapsedControl"] {
-    color: #e5c158 !important;
-    background-color: rgba(10, 9, 8, 0.6) !important;
-    border: 1px solid rgba(212, 175, 55, 0.4) !important;
-    border-radius: 6px !important;
-    z-index: 999999 !important;
-    top: 15px !important;
-    left: 15px !important;
-    transition: all 0.3s ease;
-}
-[data-testid="collapsedControl"]:hover {
-    background-color: rgba(212, 175, 55, 0.2) !important;
-    border-color: #e5c158 !important;
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5) !important;
-}
-[data-testid="collapsedControl"] svg {
-    fill: #e5c158 !important;
-    color: #e5c158 !important;
-}
-
-/* 发光标题与文字隔离线 */
+/* 发光标题特效 */
 h1, h2, h3 {
-    text-shadow: 0 0 15px rgba(212, 175, 55, 0.5), 0 0 1px rgba(212, 175, 55, 0.8);
-    letter-spacing: 3px;
-    font-weight: 400 !important;
-    color: #e5c158 !important;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.6), 0 0 20px rgba(212, 175, 55, 0.3);
+    letter-spacing: 2px;
+    font-weight: 600 !important;
+    color: #f7e096 !important;
 }
-
 h1 {
     text-align: center;
-    border-bottom: 1px solid transparent;
-    border-image: linear-gradient(to right, transparent, rgba(212,175,55,0.6), transparent) 1;
-    padding-bottom: 15px;
-    margin-bottom: 30px;
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(90deg, transparent, #d4af37, transparent) 1;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
 }
 
-/* 卡片容器：深色羊皮纸加金边 */
+/* 容器与卡片边界：发光特效与毛玻璃 */
 div[data-testid="metric-container"], 
 div[data-testid="stExpander"], 
 div[data-baseweb="card"],
 .stAlert {
-    background: 
-        linear-gradient(135deg, rgba(22, 20, 17, 0.95) 0%, rgba(10, 9, 8, 0.98) 100%),
-        url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.04"/></svg>') !important;
-    border: 1px solid rgba(212, 175, 55, 0.4) !important;
-    border-radius: 2px !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.8), inset 0 0 10px rgba(212,175,55,0.05) !important;
+    background: rgba(15, 13, 11, 0.8) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    border-radius: 4px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(212, 175, 55, 0.05) !important;
+    backdrop-filter: blur(10px) !important;
     color: #eaddc5 !important;
-    padding: 10px;
-}
-
-/* Expander 标题的高级感 */
-.streamlit-expanderHeader {
-    background-color: transparent !important;
-    color: #e5c158 !important;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
-    font-weight: 600;
-    letter-spacing: 1px;
+    padding: 15px;
     transition: all 0.3s ease;
 }
-.streamlit-expanderHeader:hover {
-    color: #fff2c8 !important;
-    text-shadow: 0 0 10px rgba(212,175,55,0.8);
+
+div[data-testid="stExpander"]:hover, div[data-testid="metric-container"]:hover {
+    box-shadow: 0 4px 25px rgba(212, 175, 55, 0.2), inset 0 0 20px rgba(212, 175, 55, 0.1) !important;
+    border-color: rgba(212, 175, 55, 0.8) !important;
+    transform: translateY(-2px);
 }
 
-/* 按钮的黑金神秘脉冲效果 */
+/* 指标卡片（Metric）文字自适应与特效 */
+div[data-testid="metric-container"] {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+}
+div[data-testid="metric-container"] label {
+    color: #c4b59d !important;
+    font-weight: 600 !important;
+}
+div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
+    color: #f7e096 !important;
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+}
+
+/* 按钮的黑金霓虹脉冲效果 */
 button[kind="primary"], button[data-testid="baseButton-primary"] {
-    background: linear-gradient(45deg, #1f1b13, #0a0908) !important;
+    background: linear-gradient(135deg, #1f1b13, #0a0908) !important;
     border: 1px solid #d4af37 !important;
     color: #d4af37 !important;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -226,53 +202,48 @@ button[kind="primary"], button[data-testid="baseButton-primary"] {
     position: relative;
     overflow: hidden;
 }
+
 button[kind="primary"]:hover, button[data-testid="baseButton-primary"]:hover {
-    background: linear-gradient(45deg, #d4af37, #b08d28) !important;
+    background: linear-gradient(135deg, #d4af37, #b08d28) !important;
     color: #000 !important;
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.6), 0 0 40px rgba(212, 175, 55, 0.4) !important;
-    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.6), 0 0 50px rgba(212, 175, 55, 0.4) !important;
+    transform: translateY(-2px) scale(1.02);
     text-shadow: none;
     border-color: #fff !important;
 }
 
+/* 次要按钮也有发光浮动效果 */
 button[kind="secondary"], button[data-testid="baseButton-secondary"] {
-    background: transparent !important;
-    border: 1px solid rgba(212, 175, 55, 0.3) !important;
-    color: #aa9c80 !important;
+    background: rgba(10, 9, 8, 0.5) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    color: #d4af37 !important;
     transition: all 0.3s ease;
     letter-spacing: 1px;
 }
 button[kind="secondary"]:hover, button[data-testid="baseButton-secondary"]:hover {
-    border-color: #d4af37 !important;
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
-    color: #e5c158 !important;
+    background: rgba(212, 175, 55, 0.1) !important;
+    border-color: #e5c158 !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+    color: #fff !important;
     transform: translateY(-1px);
-}
-
-/* 侧边栏的深层质感 */
-[data-testid="stSidebar"] {
-    border-right: 1px solid rgba(212, 175, 55, 0.3) !important;
-    background: 
-        linear-gradient(180deg, rgba(10,9,8,1) 0%, rgba(15,13,11,1) 100%),
-        url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.05"/></svg>') !important;
-    box-shadow: inset -10px 0 20px rgba(0,0,0,0.9);
 }
 
 /* 分割线鎏金效果 */
 hr {
     border-bottom: 0 !important;
     height: 1px;
-    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.6), transparent);
-    margin: 2em 0;
+    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.8), transparent) !important;
+    margin: 2.5em 0;
 }
 
-/* dataframe 表格样式覆盖 */
+/* 表格样式覆盖 */
 [data-testid="stDataFrame"] {
-    border: 1px solid rgba(212,175,55,0.3);
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    border-radius: 4px;
 }
 th {
     background-color: #1a1814 !important;
-    color: #d4af37 !important;
+    color: #f7e096 !important;
     border-bottom: 1px solid #d4af37 !important;
 }
 td {
@@ -283,36 +254,23 @@ td {
 
 /* 滚动条赛博化 */
 ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 6px;
+    height: 6px;
 }
 ::-webkit-scrollbar-track {
     background: #050505;
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(212, 175, 55, 0.5);
-    border-radius: 2px;
+    background: rgba(212, 175, 55, 0.4);
+    border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(212, 175, 55, 0.9);
-    box-shadow: 0 0 10px #d4af37;
+    box-shadow: 0 0 15px #d4af37;
 }
 
-/* 移动端适配 */
-@media (max-width: 768px) {
-    .block-container {
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
-        padding-left: 0.8rem !important;
-        padding-right: 0.8rem !important;
-    }
-    h1 { font-size: 1.8rem !important; margin-bottom: 15px; }
-    h2 { font-size: 1.4rem !important; }
-    button[kind="primary"] {
-        padding: 12px !important;
-        font-size: 16px !important;
-    }
-}
+/* 隐藏 Footer */
+footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 

@@ -56,14 +56,20 @@ def run_analysis(
     import streamlit as st
     
     current_api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not current_api_key and hasattr(st, "secrets") and "ANTHROPIC_API_KEY" in st.secrets:
-        current_api_key = st.secrets["ANTHROPIC_API_KEY"]
+    try:
+        if not current_api_key and hasattr(st, "secrets") and "ANTHROPIC_API_KEY" in st.secrets:
+            current_api_key = st.secrets["ANTHROPIC_API_KEY"]
+    except Exception:
+        pass
     if not current_api_key:
         current_api_key = ANTHROPIC_API_KEY
 
     current_base_url = os.getenv("ANTHROPIC_BASE_URL")
-    if not current_base_url and hasattr(st, "secrets") and "ANTHROPIC_BASE_URL" in st.secrets:
-        current_base_url = st.secrets["ANTHROPIC_BASE_URL"]
+    try:
+        if not current_base_url and hasattr(st, "secrets") and "ANTHROPIC_BASE_URL" in st.secrets:
+            current_base_url = st.secrets["ANTHROPIC_BASE_URL"]
+    except Exception:
+        pass
     if not current_base_url:
         current_base_url = ANTHROPIC_BASE_URL
 

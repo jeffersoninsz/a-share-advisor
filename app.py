@@ -329,10 +329,8 @@ import os
 # ============ 📊 分析报告页 ============
 if page == "📊 分析报告":
     st.title("A股 AI 分析顾问")
-    # 注入高质量 AI Banner
-    banner_img = os.path.join("assets", "banner.png")
-    if os.path.exists(banner_img):
-        st.image(banner_img, use_container_width=True)
+    # 保持界面简洁，移除顶部静态大图（改为仅使用全屏背景）
+
 
     # 配置校验
     config_errors = validate_config()

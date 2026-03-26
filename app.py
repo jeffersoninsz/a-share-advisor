@@ -9,13 +9,37 @@ from config.utf8_setup import ensure_utf8_output
 ensure_utf8_output()
 
 import os
+import sys
 from pathlib import Path
 
 # --- HOTFIX FOR STREAMLIT CLOUD ---
-# Streamlit Cloud has read-only home directory but efinance tries to create ~/.efinance
-temp_home = str(Path(__file__).parent / "storage")
-os.environ["HOME"] = temp_home
-os.environ["USERPROFILE"] = temp_home
+# Streamlit Cloud has read-only site-packages which crashes efinance.
+# We temporarily ignore mkdir PermissionErrors during import and then remap its cache path.
+_original_mkdir = Path.mkdir
+
+def _safe_mkdir(self, mode=0o777, parents=False, exist_ok=False):
+    try:
+        _original_mkdir(self, mode=mode, parents=parents, exist_ok=exist_ok)
+    except PermissionError:
+        pass
+
+Path.mkdir = _safe_mkdir
+
+try:
+    import efinance
+    import efinance.config
+    import efinance.shared
+    
+    _temp_dir = Path(__file__).parent / "storage" / "efinance_data"
+    _original_mkdir(_temp_dir, parents=True, exist_ok=True)
+    
+    efinance.config.DATA_DIR = _temp_dir
+    efinance.config.SEARCH_RESULT_CACHE_PATH = str(_temp_dir / "search-cache.json")
+    efinance.shared.SEARCH_RESULT_CACHE_PATH = str(_temp_dir / "search-cache.json")
+except Exception:
+    pass
+finally:
+    Path.mkdir = _original_mkdir
 # ----------------------------------
 
 import json

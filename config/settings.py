@@ -28,9 +28,10 @@ HISTORY_REPORT_LIMIT = int(os.getenv("HISTORY_REPORT_LIMIT", "10"))
 DATABASE_PATH = PROJECT_ROOT / "storage" / "reports.db"
 
 # ============ 关注股票白名单 ============
-# 用户可在此编辑关注的 A 股标的
-# 格式: {"代码": "名称"}
-WATCHLIST = {
+import json
+
+WATCHLIST_FILE = PROJECT_ROOT / "storage" / "watchlist.json"
+DEFAULT_WATCHLIST = {
     "600519": "贵州茅台",
     "300750": "宁德时代",
     "601318": "中国平安",
@@ -42,6 +43,21 @@ WATCHLIST = {
     "600900": "长江电力",
     "002475": "立讯精密",
 }
+
+if WATCHLIST_FILE.exists():
+    try:
+        with open(WATCHLIST_FILE, "r", encoding="utf-8") as f:
+            WATCHLIST = json.load(f)
+    except Exception:
+        WATCHLIST = DEFAULT_WATCHLIST.copy()
+else:
+    WATCHLIST = DEFAULT_WATCHLIST.copy()
+    try:
+        WATCHLIST_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(WATCHLIST_FILE, "w", encoding="utf-8") as f:
+            json.dump(WATCHLIST, f, ensure_ascii=False, indent=4)
+    except Exception:
+        pass
 
 # ============ K 线周期映射 ============
 KLINE_PERIODS = {

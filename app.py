@@ -47,7 +47,7 @@ def get_base64_of_bin_file(bin_file):
     except Exception:
         return ""
 
-bg_base64 = get_base64_of_bin_file('assets/bg_new.png')
+bg_base64 = get_base64_of_bin_file('assets/bg_premium.png')
 if bg_base64:
     st.markdown(
         f"""
@@ -71,17 +71,38 @@ st.markdown("""
 /* 古典衬线与神秘感字体 */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;700&display=swap');
 
-html, body, [class*="st-"] {
+/* 安全接管系统字体：避免使用通配符强覆盖底层 Icon 的原生字库 */
+html, body, .stApp {
     font-family: 'Noto Serif SC', 'Cinzel', serif;
+}
+/* 针对常见文本区块精准施加自定义字体 */
+p, h1, h2, h3, h4, h5, h6, li, label, div[data-testid="metric-container"] {
+    font-family: 'Noto Serif SC', 'Cinzel', serif !important;
+}
+
+/* 保护层：绝对禁止修改原生的材料图标字库，利用翻译静止属性归还 Streamlit 原有结构权利 */
+.material-icons, .material-symbols-rounded, .stIcon, [data-testid="stSidebarCollapsedControl"] svg, span[translate="no"], button[kind="header"] * {
+    font-family: "Material Symbols Rounded", "Material Icons", sans-serif !important;
 }
 
 /* 全局背景: 暗黑羊皮纸质感 */
 .stApp {
-    background-color: #0a0908 !important;
+    background-color: #0c0b0a !important;
     color: #d4c4a8;
 }
 
-/* 隐藏 Streamlit 默认的 Footer (不隐藏 header，保留侧边栏展开按钮) */
+/* 强行接管由于原皮白色导致的侧边栏违和白块，使其融入黑金环境 */
+[data-testid="stSidebar"] {
+    background-color: #0c0b0a !important;
+    border-right: 1px solid #4a3e2a !important;
+}
+
+/* 使 Header 横幅融入背景，防止 Streamlit 白色顶栏破坏赛博沉浸感 */
+[data-testid="stHeader"] {
+    background-color: transparent !important;
+}
+
+/* 隐藏 Streamlit 默认的 Footer */
 footer {visibility: hidden;}
 
 /* 防止卡片和指标容器中的文字重叠 */
@@ -90,6 +111,27 @@ div[data-testid="metric-container"] {
     overflow-wrap: break-word !important;
     white-space: normal !important;
     padding: 10px !important;
+}
+
+/* 强制显示左上角侧边栏展开折叠按钮，避免融入背景消失 */
+[data-testid="collapsedControl"] {
+    color: #e5c158 !important;
+    background-color: rgba(10, 9, 8, 0.6) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    border-radius: 6px !important;
+    z-index: 999999 !important;
+    top: 15px !important;
+    left: 15px !important;
+    transition: all 0.3s ease;
+}
+[data-testid="collapsedControl"]:hover {
+    background-color: rgba(212, 175, 55, 0.2) !important;
+    border-color: #e5c158 !important;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5) !important;
+}
+[data-testid="collapsedControl"] svg {
+    fill: #e5c158 !important;
+    color: #e5c158 !important;
 }
 
 /* 发光标题与文字隔离线 */
@@ -278,7 +320,7 @@ import os
 if page == "📊 分析报告":
     st.title("A股 AI 分析顾问")
     # 注入高质量 AI Banner
-    banner_img = r"C:\Users\83158\.gemini\antigravity\brain\2dc9410d-99c3-4eb5-9f3a-e802a57713e5\premium_ai_advisor_banner_1774433423046.png"
+    banner_img = os.path.join("assets", "banner.png")
     if os.path.exists(banner_img):
         st.image(banner_img, use_container_width=True)
 
@@ -378,9 +420,10 @@ if page == "📊 分析报告":
                         "MEDIUM": "⚡ 中",
                         "LOW": "💤 低",
                     }.get(rec.get("confidence"), "")
+                    action_cn = {"BUY": "买入", "SELL": "卖出", "HOLD": "持有"}.get(rec.get("action", ""), rec.get("action", ""))
 
                     with st.expander(
-                        f"{action_emoji} {rec.get('name', '')} ({rec.get('symbol', '')}) — {rec.get('action', '')} | 置信度: {confidence_badge}",
+                        f"{action_emoji} {rec.get('name', '')} ({rec.get('symbol', '')}) — {action_cn} | 置信度: {confidence_badge}",
                         expanded=True,
                     ):
                         st.write(f"**推荐理由**: {rec.get('reason', '')}")
@@ -450,9 +493,10 @@ elif page == "📜 历史记录":
                         action_emoji = {"BUY": "🟢", "SELL": "🔴", "HOLD": "🟡"}.get(
                             rec.get("action"), "⚪"
                         )
+                        action_cn = {"BUY": "买入", "SELL": "卖出", "HOLD": "持有"}.get(rec.get("action", ""), rec.get("action", ""))
                         st.write(
                             f"{action_emoji} **{rec.get('name', '')}** ({rec.get('symbol', '')}) "
-                            f"— {rec.get('action', '')} | {rec.get('reason', '')[:80]}"
+                            f"— {action_cn} | {rec.get('reason', '')[:80]}"
                         )
                 except json.JSONDecodeError:
                     st.error("报告数据解析失败")
@@ -485,9 +529,11 @@ elif page == "🎯 准确率追踪":
             if record["actual_result"] == "PENDING":
                 col1, col2, col3 = st.columns([3, 1, 1])
                 with col1:
+                    action_cn = {"BUY": "买入", "SELL": "卖出", "HOLD": "持有"}.get(record.get("action", ""), record.get("action", ""))
+                    confidence_cn = {"HIGH": "高", "MEDIUM": "中", "LOW": "低"}.get(record.get("confidence", ""), record.get("confidence", ""))
                     st.write(
                         f"**{record.get('name', '')}** ({record.get('symbol', '')}) "
-                        f"— {record.get('action', '')} | {record.get('confidence', '')}"
+                        f"— {action_cn} | {confidence_cn}"
                     )
                 with col2:
                     if st.button("✅ 命中", key=f"win_{record['id']}"):
@@ -499,9 +545,10 @@ elif page == "🎯 准确率追踪":
                         st.rerun()
             else:
                 result_emoji = "✅" if record["actual_result"] == "WIN" else "❌"
+                action_cn = {"BUY": "买入", "SELL": "卖出", "HOLD": "持有"}.get(record.get("action", ""), record.get("action", ""))
                 st.write(
                     f"{result_emoji} **{record.get('name', '')}** ({record.get('symbol', '')}) "
-                    f"— {record.get('action', '')} | 标记于 {record.get('marked_at', '')}"
+                    f"— {action_cn} | 标记于 {record.get('marked_at', '')}"
                 )
     else:
         st.info("暂无推荐记录。")
@@ -509,33 +556,117 @@ elif page == "🎯 准确率追踪":
 
 # ============ ⚙️ 设置页 ============
 elif page == "⚙️ 设置":
-    st.title("⚙️ 系统设置")
+    st.title("⚙️ 系统设置 (热配置中心)")
 
-    st.subheader("📋 当前关注股票白名单")
-    if WATCHLIST:
-        watchlist_df = pd.DataFrame(
-            [{"代码": code, "名称": name} for code, name in WATCHLIST.items()]
-        )
-        st.dataframe(watchlist_df, use_container_width=True, hide_index=True)
-    else:
-        st.warning("白名单为空！")
-
-    st.info(
-        "💡 **修改白名单**: 编辑 `config/settings.py` 文件中的 `WATCHLIST` 字典，"
-        "添加或移除股票代码和名称。"
-    )
+    st.subheader("🔑 核心大模型 API 配置")
+    st.markdown("在此动态更新您的 OpenRouter / Anthropic 秘钥，支持热加载（无需重启）。")
+    
+    env_path = ".env"
+    current_key = ""
+    if os.path.exists(env_path):
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("OPENROUTER_API_KEY=") or line.startswith("ANTHROPIC_API_KEY="):
+                    current_key = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    if current_key:
+                        break
+                        
+    new_key = st.text_input("API Key (OpenRouter/Anthropic)", value=current_key, type="password", help="输入 sk-or-v1-... 或 sk-ant-... 格式的秘钥")
+    
+    if st.button("💾 保存配置并注入系统底层环境", type="primary"):
+        env_lines = []
+        key_found_openrouter = False
+        key_found_anthro = False
+        baseurl_found = False
+        
+        is_openrouter = new_key.startswith("sk-or-")
+        new_base_url = "https://openrouter.ai/api/v1" if is_openrouter else ""
+        
+        if os.path.exists(env_path):
+            with open(env_path, "r", encoding="utf-8") as f:
+                env_lines = f.readlines()
+        
+        with open(env_path, "w", encoding="utf-8") as f:
+            for line in env_lines:
+                if line.startswith("OPENROUTER_API_KEY="):
+                    f.write(f'OPENROUTER_API_KEY="{new_key}"\n')
+                    key_found_openrouter = True
+                elif line.startswith("ANTHROPIC_API_KEY="):
+                    f.write(f'ANTHROPIC_API_KEY="{new_key}"\n')
+                    key_found_anthro = True
+                elif line.startswith("ANTHROPIC_BASE_URL="):
+                    f.write(f'ANTHROPIC_BASE_URL="{new_base_url}"\n')
+                    baseurl_found = True
+                else:
+                    f.write(line)
+            if not key_found_openrouter:
+                f.write(f'OPENROUTER_API_KEY="{new_key}"\n')
+            if not key_found_anthro:
+                f.write(f'ANTHROPIC_API_KEY="{new_key}"\n')
+            if not baseurl_found:
+                f.write(f'ANTHROPIC_BASE_URL="{new_base_url}"\n')
+                
+        # 强制推入热内存
+        os.environ["OPENROUTER_API_KEY"] = new_key
+        os.environ["ANTHROPIC_API_KEY"] = new_key
+        if new_base_url:
+            os.environ["ANTHROPIC_BASE_URL"] = new_base_url
+        st.success("✅ API 秘钥已成功落盘至 `.env` 文件并挂载全局内存，Base URL 已安全路由重定向。可返回测试。")
 
     st.divider()
-    st.subheader("🔑 环境配置状态")
+
+    st.subheader("📋 动态标的池配置 (白名单)")
+    st.markdown("在此您可以直接**增删改**重点跟踪的 A 股白名单池，双击单元格即可输入。支持底部行 `+` 号动态新增。保存后全网自动落盘并即时生效。")
+    
+    from config.settings import WATCHLIST, WATCHLIST_FILE
+    import json
+    
+    current_watchlist = []
+    for code, name in WATCHLIST.items():
+        current_watchlist.append({"股票代码": code, "公司名称": name})
+        
+    watchlist_df = pd.DataFrame(current_watchlist)
+    
+    # 动态可编辑数据表
+    edited_df = st.data_editor(
+        watchlist_df,
+        num_rows="dynamic",
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "股票代码": st.column_config.TextColumn("股票代码 (如 600519)", required=True),
+            "公司名称": st.column_config.TextColumn("公司标的名称", required=True)
+        }
+    )
+    
+    if st.button("💾 保存储存该股票池矩阵", type="primary", key="save_watchlist"):
+        new_watchlist = {}
+        for _, row in edited_df.iterrows():
+            code = str(row.get("股票代码", "")).strip()
+            name = str(row.get("公司名称", "")).strip()
+            if code and name and code != "nan":
+                new_watchlist[code] = name
+                
+        WATCHLIST.clear()
+        WATCHLIST.update(new_watchlist)
+        
+        try:
+            with open(WATCHLIST_FILE, "w", encoding="utf-8") as f:
+                json.dump(WATCHLIST, f, ensure_ascii=False, indent=4)
+            st.success(f"✅ 白名单热重制完毕！当前挂载观测池包含 {len(WATCHLIST)} 支标的。")
+            st.toast("✅ 白名单实时热更新完毕！")
+        except Exception as e:
+            st.error(f"❌ 写入配置持久化失败: {str(e)}")
+
+    st.divider()
+    st.subheader("ℹ️ 系统底层状态")
     config_errors = validate_config()
     if config_errors:
         for err in config_errors:
             st.error(f"⚠️ {err}")
     else:
-        st.success("✅ 所有配置正常")
+        st.success("✅ 全局变量和数据库路径监听正常")
 
-    st.divider()
-    st.subheader("ℹ️ 系统信息")
     from config.settings import CLAUDE_MODEL, MAX_TOKENS
     st.json({
         "Claude 模型": CLAUDE_MODEL,

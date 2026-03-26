@@ -51,11 +51,26 @@ def run_analysis(
     # 确保数据库已初始化
     init_db()
 
-    # 校验 API Key
-    if not ANTHROPIC_API_KEY:
+    # 校验 API Key (支持热加载与 Streamlit Secrets)
+    import os
+    import streamlit as st
+    
+    current_api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not current_api_key and hasattr(st, "secrets") and "ANTHROPIC_API_KEY" in st.secrets:
+        current_api_key = st.secrets["ANTHROPIC_API_KEY"]
+    if not current_api_key:
+        current_api_key = ANTHROPIC_API_KEY
+
+    current_base_url = os.getenv("ANTHROPIC_BASE_URL")
+    if not current_base_url and hasattr(st, "secrets") and "ANTHROPIC_BASE_URL" in st.secrets:
+        current_base_url = st.secrets["ANTHROPIC_BASE_URL"]
+    if not current_base_url:
+        current_base_url = ANTHROPIC_BASE_URL
+
+    if not current_api_key:
         return {
             "success": False,
-            "error": "ANTHROPIC_API_KEY 未配置，请在 .env 文件中设置",
+            "error": "ANTHROPIC_API_KEY 未配置，请在前端设置页面配置或在 Streamlit Secrets 中配置",
             "report": None,
             "report_id": None,
             "tool_calls_log": [],
@@ -74,10 +89,10 @@ def run_analysis(
         })
 
     # 创建 OpenAI 客户端（每次新建，隔离会话）
-    client_kwargs = {"api_key": ANTHROPIC_API_KEY}
-    if ANTHROPIC_BASE_URL:
-        client_kwargs["base_url"] = ANTHROPIC_BASE_URL
-        logger.info(f"📡 使用自定义 API 端点: {ANTHROPIC_BASE_URL}")
+    client_kwargs = {"api_key": current_api_key}
+    if current_base_url:
+        client_kwargs["base_url"] = current_base_url
+        logger.info(f"📡 使用自定义 API 端点: {current_base_url}")
     client = openai.OpenAI(**client_kwargs)
 
     # 构建 System Prompt

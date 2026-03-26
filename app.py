@@ -110,7 +110,7 @@ html, body, [data-testid="stAppViewContainer"] {{
 /* ============ 动态背景 & 核心容器 ============ */
 [data-testid="stAppViewContainer"] {{
     background-image: 
-        radial-gradient(circle at 50% 50%, rgba(10, 8, 5, 0.3) 0%, rgba(5, 5, 5, 0.6) 100%),
+        radial-gradient(circle at 50% 50%, rgba(10, 8, 5, 0.8) 0%, rgba(5, 5, 5, 0.98) 100%),
         url("data:image/png;base64,{bg_base64}") !important;
     background-size: cover !important;
     background-position: center !important;
@@ -123,27 +123,37 @@ html, body, [data-testid="stAppViewContainer"] {{
     background: transparent !important;
 }}
 
+/* ============ 主内容玻璃拟态面板 (修复杂乱背景遮挡文字) ============ */
+.block-container, [data-testid="stMainBlockContainer"] {{
+    background: rgba(12, 10, 8, 0.85) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(212, 175, 55, 0.2) !important;
+    border-radius: 12px !important;
+    padding: 3rem !important;
+    margin-top: 1rem !important;
+    margin-bottom: 2rem !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(212, 175, 55, 0.05) !important;
+}}
+
 /* 侧边栏及顶栏透明化处理 */
-header[data-testid="stHeader"], [data-testid="stHeader"] {{
+header[data-testid="stHeader"] {{
     background: transparent !important;
 }}
 
 [data-testid="stSidebar"] {{
-    background-color: rgba(8, 7, 7, 0.9) !important;
+    background-color: rgba(8, 7, 7, 0.95) !important;
     backdrop-filter: blur(15px);
     border-right: 1px solid rgba(212, 175, 55, 0.3) !important;
     box-shadow: 4px 0 15px rgba(0, 0, 0, 0.9);
 }}
 
 /* 隐藏 Streamlit 自带的右上角工具栏，但保留侧边栏按钮容器 */
-[data-testid="stToolbar"] {{
+[data-testid="stToolbar"], .stDeployButton, #MainMenu {{
     display: none !important;
     visibility: hidden !important;
 }}
-.stDeployButton, #MainMenu, button[kind="header"] {{
-    display: none !important;
-    visibility: hidden !important;
-}}
+
 
 /* 发光标题特效 */
 h1, h2, h3 {{
@@ -165,15 +175,33 @@ div[data-testid="metric-container"],
 div[data-testid="stExpander"], 
 div[data-baseweb="card"],
 .stAlert {{
-    background: rgba(15, 13, 11, 0.8) !important;
+    background: rgba(18, 15, 12, 0.8) !important;
     border: 1px solid rgba(212, 175, 55, 0.3) !important;
-    border-radius: 4px !important;
+    border-radius: 6px !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(212, 175, 55, 0.05) !important;
     backdrop-filter: blur(10px) !important;
     color: #eaddc5 !important;
     padding: 15px;
     transition: all 0.3s ease;
 }}
+
+.stAlert p {{
+    color: #eaddc5 !important;
+}}
+
+/* 多选框标签 (Tokens) 赛博化 */
+span[data-baseweb="tag"] {{
+    background-color: rgba(212, 175, 55, 0.15) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    color: #f7e096 !important;
+}}
+span[data-baseweb="tag"] span {{
+    color: #f7e096 !important;
+}}
+div[role="button"][aria-label="Clear all"] {{
+    display: none !important; /* hide default clear button which clashes */
+}}
+
 
 div[data-testid="stExpander"]:hover, div[data-testid="metric-container"]:hover {{
     box-shadow: 0 4px 25px rgba(212, 175, 55, 0.2), inset 0 0 20px rgba(212, 175, 55, 0.1) !important;
@@ -425,9 +453,9 @@ if page == "📊 分析报告":
             st.divider()
             st.caption("🗑️ 点击右侧按钮删除对应股票：")
             for code, name in list(current_watchlist.items()):
-                del_col1, del_col2 = st.columns([5, 1])
+                del_col1, del_col2, _ = st.columns([3, 1, 6])
                 with del_col1:
-                    st.text(f"{code} — {name}")
+                    st.markdown(f"**{code}** — {name}")
                 with del_col2:
                     if st.button("❌", key=f"del_{code}", help=f"删除 {name}"):
                         del current_watchlist[code]
@@ -442,7 +470,7 @@ if page == "📊 分析报告":
     st.divider()
 
     # 运行分析按钮区 (始终固定在此位置)
-    col1, col2, col3 = st.columns([2, 1, 1])
+    _, col1, col2, col3, _ = st.columns([1, 2, 2, 2, 1])
     with col1:
         run_button = st.button(
             "🚀 运行分析",

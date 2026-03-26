@@ -76,7 +76,7 @@ quantitative_analysis/   [最源初的主心骨阵列体系]
 
 ## 🚀 演化纪元进度 (Rollout Milestones)
 
-我们的系统已成功横渡 **Phase 1 ~ Phase 7** 全部里程碑。
+我们的系统已成功横渡 **Phase 1 ~ Phase 8** 全部里程碑。
 
 | Phase | 标题 | 状态 |
 | :--- | :--- | :---: |
@@ -87,6 +87,24 @@ quantitative_analysis/   [最源初的主心骨阵列体系]
 | Phase 5 | 前端自选股增删改查管理面板 | ✅ |
 | Phase 6 | API Key 热更新 + 云端 PermissionError 修复 | ✅ |
 | Phase 7 | 数据源透明展示 + 分析按钮始终可见 + Deploy 菜单隐藏 | ✅ |
+| Phase 8 | 前端极端故障彻底修复 (侧边栏丢失、字体重叠、Hot Reload下 I/O 封闭错误) | ✅ |
+
+---
+
+## 🛠️ 核心避坑指南与已修复的重大故障 (Critical Postmortems - SSOT)
+任何新接手的开发者在排查 Bug 时，**必须**首先阅读以下历史巨坑，严禁走回头路：
+
+### 1. 侧边栏消失与 `Material Icons` 重叠渲染故障
+* **故障现象**：在进行极简 UI 清理时，误用大范围 `[data-testid="stToolbar"]` 和通配体 `[class*="st-"]` 选择器，导致侧边栏折叠小按键消失。且覆盖了 Streamlit 内置部件默认字体，导致扩展面板里原本渲染的 `keyboard_arrow_right` 被打回字符串原形文本并严重重叠溢出。
+* **极简防线**：绝对禁止无脑 `visibility: hidden` 页面头部。隐藏必须极其精确（瞄准 `.stDeployButton`, `[data-testid="stAppDeployButton"]`, `#MainMenu` 等独立 ID）。如果需要全局更换 `Cinzel / Noto Serif` 字体大类，**必须强制例外赦免 `.material-symbols-rounded` 的 `font-family`**。
+
+### 2. `ValueError: I/O operation on closed file` 崩溃雷区
+* **故障现象**：随着大模型长时间解析，界面因用户的随意操作触发 Hot Rerun（热重载），随后引发一整面的红色崩溃回溯，底层死锁在终端输出管道关闭报错。
+* **绝对铁律**：问题根源是 `sys.stdout` 的中文流强制装甲重做时操作盲目。在 Streamlit 后台持续复用的环境里，频繁通过 `io.TextIOWrapper(sys.stdout.buffer)` 会直接将前一周期的句柄锁死抛弃。必须在 `config/utf8_setup.py` 中通过 `isinstance` 与编码预先扫描，**严格保证进程存活期仅仅包装一次**。
+
+### 3. 三方爬虫组件暴死只读云沙盒与部署选型
+* **故障现象**：`efinance` 包存在硬编码读写磁盘缓存的操作，若直推云端会导致爆破 `PermissionError` 退役。
+* **绝对铁律**：严禁采用 Vercel。如果在 Streamlit Cloud 启动，必须由 `app.py` 中动态挂载猴子补丁 (`_safe_mkdir = lambda *args...`) 拦截它创建缓存夹的非法指令。
 
 ### 🔮 未来计划
 - [ ] PostgreSQL 替换 SQLite，支持大并发访问

@@ -113,12 +113,21 @@ html, body, .stApp {
 }
 
 /* 隐藏 Streamlit 自带的右上角 Deploy 按钮和汉堡菜单 */
-[data-testid="stToolbar"],
-header[data-testid="stHeader"],
-.stDeployButton,
-#MainMenu {
+/* 注意：不能隐藏整个 header，否则 Edge 浏览器会丢失侧边栏展开按钮 */
+[data-testid="stToolbar"] {
     display: none !important;
     visibility: hidden !important;
+}
+.stDeployButton,
+#MainMenu,
+button[kind="header"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+/* 确保 header 本身可见（侧边栏按钮在其中），但去掉背景让其透明融入主题 */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+    border-bottom: none !important;
 }
 
 /* 保护 Material Icons */

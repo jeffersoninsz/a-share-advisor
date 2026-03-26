@@ -2,6 +2,7 @@
 
 # LLM
 anthropic>=0.40.0
+openai>=1.0.0
 
 # 数据源
 akshare>=1.14.0

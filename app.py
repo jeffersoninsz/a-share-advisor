@@ -112,6 +112,15 @@ html, body, .stApp {
     color: #eaddc5;
 }
 
+/* 隐藏 Streamlit 自带的右上角 Deploy 按钮和汉堡菜单 */
+[data-testid="stToolbar"],
+header[data-testid="stHeader"],
+.stDeployButton,
+#MainMenu {
+    display: none !important;
+    visibility: hidden !important;
+}
+
 /* 保护 Material Icons */
 .material-icons, .material-symbols-rounded, .stIcon, span[translate="no"], button[kind="header"] * {
     font-family: "Material Symbols Rounded", "Material Icons", sans-serif !important;
@@ -322,21 +331,143 @@ if page == "📊 分析报告":
         for err in config_errors:
             st.error(f"⚠️ {err}")
 
-    # 运行分析按钮区
-    col1, col2 = st.columns([1, 1])
+    # -------- 📌 控制面板区 (始终可见) --------
+    st.subheader("⚙️ 分析控制台")
+
+    # 加载最新的 WATCHLIST（动态读取，不缓存 import 时的值）
+    from config.settings import WATCHLIST_FILE, DEFAULT_WATCHLIST
+    import json as _json
+    def _load_watchlist():
+        try:
+            if WATCHLIST_FILE.exists():
+                with open(WATCHLIST_FILE, "r", encoding="utf-8") as f:
+                    return _json.load(f)
+        except Exception:
+            pass
+        return DEFAULT_WATCHLIST.copy()
+
+    def _save_watchlist(wl):
+        try:
+            WATCHLIST_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(WATCHLIST_FILE, "w", encoding="utf-8") as f:
+                _json.dump(wl, f, ensure_ascii=False, indent=4)
+        except Exception:
+            pass
+
+    current_watchlist = _load_watchlist()
+    all_stock_options = [f"{code} - {name}" for code, name in current_watchlist.items()]
+
+    # --- 标的选择 ---
+    if "selected_stocks" not in st.session_state:
+        st.session_state.selected_stocks = all_stock_options
+
+    # 同步：如果 watchlist 变化导致旧选项失效，自动清理
+    valid_selected = [s for s in st.session_state.selected_stocks if s in all_stock_options]
+
+    selected = st.multiselect(
+        "🎯 选择本次要分析的股票（可多选，留空则分析全部）",
+        options=all_stock_options,
+        default=valid_selected,
+        help="从自选股白名单中选择 AI 重点分析的标的。留空 = 分析全部。",
+    )
+    st.session_state.selected_stocks = selected
+
+    # --- 快捷操作按钮行 ---
+    qc1, qc2, qc3 = st.columns(3)
+    with qc1:
+        if st.button("✅ 全选", key="select_all_stocks", use_container_width=True):
+            st.session_state.selected_stocks = all_stock_options
+            st.rerun()
+    with qc2:
+        if st.button("🚫 全不选", key="deselect_all_stocks", use_container_width=True):
+            st.session_state.selected_stocks = []
+            st.rerun()
+    with qc3:
+        if st.button("🔄 恢复默认池", key="reset_watchlist_btn", use_container_width=True):
+            _save_watchlist(DEFAULT_WATCHLIST)
+            st.session_state.selected_stocks = [f"{c} - {n}" for c, n in DEFAULT_WATCHLIST.items()]
+            st.rerun()
+
+    # --- 增删标的 (折叠面板) ---
+    with st.expander("➕ 增删管理自选股", expanded=False):
+        st.caption("在此添加新股票或删除已有股票，保存后全局生效。")
+
+        # 添加新股票
+        add_col1, add_col2, add_col3 = st.columns([2, 3, 1])
+        with add_col1:
+            new_code = st.text_input("股票代码", placeholder="如 601398", key="new_stock_code")
+        with add_col2:
+            new_name = st.text_input("股票名称", placeholder="如 工商银行", key="new_stock_name")
+        with add_col3:
+            st.write("")  # 占位对齐
+            st.write("")
+            add_btn = st.button("➕ 添加", key="add_stock_btn", use_container_width=True)
+
+        if add_btn:
+            code = new_code.strip()
+            name = new_name.strip()
+            if not code or not name:
+                st.error("⚠️ 股票代码和名称不能为空")
+            elif code in current_watchlist:
+                st.warning(f"⚠️ 股票 {code} 已存在于白名单中")
+            else:
+                current_watchlist[code] = name
+                _save_watchlist(current_watchlist)
+                st.session_state.selected_stocks = [f"{c} - {n}" for c, n in current_watchlist.items()]
+                st.success(f"✅ 已添加 {name} ({code})")
+                st.rerun()
+
+        # 删除现有股票
+        if current_watchlist:
+            st.divider()
+            st.caption("🗑️ 点击右侧按钮删除对应股票：")
+            for code, name in list(current_watchlist.items()):
+                del_col1, del_col2 = st.columns([5, 1])
+                with del_col1:
+                    st.text(f"{code} — {name}")
+                with del_col2:
+                    if st.button("❌", key=f"del_{code}", help=f"删除 {name}"):
+                        del current_watchlist[code]
+                        _save_watchlist(current_watchlist)
+                        # 同步清理选择状态
+                        st.session_state.selected_stocks = [
+                            s for s in st.session_state.selected_stocks if not s.startswith(code)
+                        ]
+                        st.success(f"已删除 {name} ({code})")
+                        st.rerun()
+
+    st.divider()
+
+    # 运行分析按钮区 (始终固定在此位置)
+    col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
         run_button = st.button(
             "🚀 运行分析",
             type="primary",
             disabled=st.session_state.analysis_running or bool(config_errors),
             use_container_width=True,
+            key="run_analysis_btn",
         )
     with col2:
         stop_button = st.button(
             "🛑 停止分析",
             disabled=not st.session_state.analysis_running,
             use_container_width=True,
+            key="stop_analysis_btn",
         )
+    with col3:
+        clear_button = st.button(
+            "🗑️ 清空结果",
+            disabled=st.session_state.analysis_running,
+            use_container_width=True,
+            key="clear_results_btn",
+        )
+
+    if clear_button:
+        st.session_state.latest_result = None
+        st.session_state.tool_logs = []
+        st.session_state.thinking_logs = []
+        st.rerun()
 
     if stop_button:
         st.session_state.stop_requested = True
@@ -345,22 +476,27 @@ if page == "📊 分析报告":
     if run_button and not st.session_state.analysis_running:
         st.session_state.analysis_running = True
         st.session_state.stop_requested = False
+        st.session_state.latest_result = None
         st.session_state.tool_logs = []
         st.session_state.thinking_logs = []
 
         progress_container = st.container()
         with progress_container:
             status_text = st.empty()
-            tool_log_area = st.empty()
 
-            status_text.info("🤖 AI Agent 正在收集数据并分析中...")
+            # 显示本次分析范围
+            if selected:
+                stock_names = [s.split(" - ")[1] for s in selected]
+                status_text.info(f"🤖 AI Agent 正在分析 **{', '.join(stock_names)}** ...")
+            else:
+                status_text.info("🤖 AI Agent 正在分析全部自选股...")
 
             # 回调函数
             tool_logs = []
             thinking_logs = []
 
             def on_tool_call(name, inputs):
-                tool_logs.append(f"🔧 调用工具: {name}")
+                tool_logs.append({"tool": name, "input": inputs})
 
             def on_thinking(text):
                 thinking_logs.append(text[:200])
@@ -388,19 +524,69 @@ if page == "📊 分析报告":
                 st.session_state.analysis_running = False
                 st.rerun()
 
-    # 展示最新结果
+    # -------- 📊 分析结果展示区 --------
+    st.divider()
     result = st.session_state.latest_result
     if result:
         if result.get("success"):
             report = result["report"]
             st.success(f"✅ 分析完成！报告 ID: {result.get('report_id')}")
 
-            # 市场概况
+            # ---- 📡 数据源与工具调用链 (显著展示) ----
+            tool_log_data = result.get("tool_calls_log", [])
+            realtime_logs = st.session_state.tool_logs
+            if tool_log_data or realtime_logs:
+                st.subheader("📡 本次分析数据源")
+                # 汇总所有调用过的工具
+                tool_summary = {}
+                for log_entry in tool_log_data:
+                    t_name = log_entry.get("tool", "")
+                    if t_name not in tool_summary:
+                        tool_summary[t_name] = 0
+                    tool_summary[t_name] += 1
+
+                # 工具名中文映射
+                tool_cn_map = {
+                    "get_stock_list": "📋 自选股白名单",
+                    "get_realtime_quotes": "📈 实时行情报价",
+                    "get_kline_data": "📊 K线历史数据",
+                    "get_kline_summary": "📉 均线技术摘要",
+                    "get_news_feed": "📰 财联社快讯",
+                    "get_macro_data": "🏛️ 宏观经济指标",
+                    "get_sector_flow": "💰 板块资金流向",
+                    "get_north_flow": "🌏 北向资金动向",
+                    "get_history_reports": "📜 历史报告回溯",
+                }
+
+                if tool_summary:
+                    source_cols = st.columns(min(len(tool_summary), 4))
+                    for idx, (tool_name, count) in enumerate(tool_summary.items()):
+                        cn_name = tool_cn_map.get(tool_name, tool_name)
+                        with source_cols[idx % len(source_cols)]:
+                            st.metric(cn_name, f"{count} 次调用")
+
+                # 详细工具调用日志
+                with st.expander("🔧 Agent 完整工具调用链", expanded=False):
+                    for log_entry in tool_log_data:
+                        round_num = log_entry.get("round", "?")
+                        t_name = log_entry.get("tool", "")
+                        t_input = log_entry.get("input", {})
+                        t_preview = log_entry.get("output_preview", "")[:200]
+                        cn_name = tool_cn_map.get(t_name, t_name)
+                        st.markdown(f"**[轮次 {round_num}]** {cn_name}")
+                        st.code(
+                            f"参数: {json.dumps(t_input, ensure_ascii=False)[:150]}\n返回: {t_preview}",
+                            language=None,
+                        )
+
+            st.divider()
+
+            # ---- 🌐 市场概况 ----
             if report.get("market_summary"):
                 st.subheader("🌐 市场概况")
                 st.info(report["market_summary"])
 
-            # 推荐列表
+            # ---- 💡 推荐列表 ----
             if report.get("recommendations"):
                 st.subheader("💡 推荐标的")
                 for rec in report["recommendations"]:
@@ -433,7 +619,7 @@ if page == "📊 分析报告":
                         if rec.get("risk_note"):
                             st.warning(f"⚠️ 风险提示: {rec['risk_note']}")
 
-            # 自选股更新
+            # ---- 👀 自选股 ----
             if report.get("watchlist_updates"):
                 st.subheader("👀 自选股观察")
                 for item in report["watchlist_updates"]:
@@ -441,25 +627,13 @@ if page == "📊 分析报告":
                         f"🟡 **{item.get('name', '')}** ({item.get('symbol', '')}): {item.get('reason', '')}"
                     )
 
-            # 工具调用日志
-            if result.get("tool_calls_log"):
-                with st.expander("🔧 Agent 工具调用日志", expanded=False):
-                    for log in result["tool_calls_log"]:
-                        st.code(
-                            f"[轮次 {log['round']}] {log['tool']}({json.dumps(log['input'], ensure_ascii=False)[:100]})",
-                            language=None,
-                        )
         else:
             st.error(f"❌ 分析失败: {result.get('error', '未知错误')}")
             if result.get("raw_output"):
                 with st.expander("原始输出"):
                     st.text(result["raw_output"])
-
-    # 工具调用实时日志
-    if st.session_state.tool_logs:
-        with st.expander("📡 本次工具调用记录", expanded=False):
-            for log in st.session_state.tool_logs:
-                st.text(log)
+    elif not st.session_state.analysis_running:
+        st.info("👆 点击上方 **🚀 运行分析** 按钮开始 AI 智能分析。您可以先在上方选择要分析的股票标的。")
 
 
 # ============ 📜 历史记录页 ============

@@ -98,9 +98,14 @@ st.markdown(f"""
 /* 古典衬线与神秘感字体 */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;700&display=swap');
 
-/* 全局字体：排除系统图标，防止 arrow_right 等源码泄漏 */
-html, body, [class*="st-"]:not(.stIcon):not(.material-icons):not(.material-symbols-rounded) {{
+/* 全局字体 */
+html, body, [class*="st-"] {{
     font-family: 'Noto Serif SC', 'Cinzel', serif;
+}}
+
+/* 坚决保护所有 Streamlit 图标字体，防止显示为原始文本 (如 keyboard_arrow_right) */
+.material-icons, .material-symbols-rounded, .stIcon, [data-testid="stIconMaterial"] {{
+    font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important;
 }}
 
 /* ============ 动态背景 ============ */

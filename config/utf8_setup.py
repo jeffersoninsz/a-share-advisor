@@ -20,9 +20,9 @@ def ensure_utf8_output():
 
     # 如果 stdout 已经是 TextIOWrapper 且有 buffer 属性
     try:
-        if hasattr(sys.stdout, 'buffer'):
+        if hasattr(sys.stdout, 'buffer') and getattr(sys.stdout, 'encoding', '').lower() != 'utf-8':
             sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-        if hasattr(sys.stderr, 'buffer'):
+        if hasattr(sys.stderr, 'buffer') and getattr(sys.stderr, 'encoding', '').lower() != 'utf-8':
             sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
     except Exception:
         pass  # 静默失败，不影响主流程

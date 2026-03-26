@@ -8,6 +8,16 @@ A 股 AI 量化分析顾问 — Streamlit Dashboard
 from config.utf8_setup import ensure_utf8_output
 ensure_utf8_output()
 
+import os
+from pathlib import Path
+
+# --- HOTFIX FOR STREAMLIT CLOUD ---
+# Streamlit Cloud has read-only home directory but efinance tries to create ~/.efinance
+temp_home = str(Path(__file__).parent / "storage")
+os.environ["HOME"] = temp_home
+os.environ["USERPROFILE"] = temp_home
+# ----------------------------------
+
 import json
 import threading
 from datetime import datetime

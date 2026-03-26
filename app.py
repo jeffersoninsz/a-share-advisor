@@ -75,112 +75,96 @@ from pathlib import Path
 @st.cache_data
 def get_base64_of_bin_file(bin_file):
     try:
-        with open(bin_file, 'rb') as f:
+        # Use absolute path relative to this script to ensure reliability across CWDs
+        abs_path = Path(__file__).parent / bin_file
+        if not abs_path.exists():
+            return ""
+        with open(abs_path, 'rb') as f:
             data = f.read()
         return base64.b64encode(data).decode()
     except Exception:
         return ""
 
-bg_base64 = get_base64_of_bin_file('assets/bg_new.png')
-if bg_base64:
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background-image: 
-                radial-gradient(circle at 50% 50%, rgba(20, 18, 15, 0.2) 0%, rgba(5, 5, 5, 0.6) 100%),
-                url("data:image/png;base64,{bg_base64}") !important;
-            background-size: cover !important;
-            background-position: center !important;
-            background-attachment: fixed !important;
-            background-blend-mode: overlay;
-        }}
-        /* 侧边栏也同步透明背景，露出底层背景图 */
-        [data-testid="stSidebar"] {{
-            background-color: rgba(5, 5, 5, 0.7) !important;
-            backdrop-filter: blur(10px);
-            border-right: 1px solid rgba(212, 175, 55, 0.2);
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+# 同时加载背景图和可能的 Premium 备选
+bg_base64 = get_base64_of_bin_file('assets/bg_premium.png')
+image_type = "bg_premium"
+if not bg_base64:
+    bg_base64 = get_base64_of_bin_file('assets/bg_new.png')
+    image_type = "bg_new"
 
 # ============ 自定义 CSS (黑金赛博羊皮纸) ============
-st.markdown("""
+st.markdown(f"""
 <style>
+/* 注入信息用于调试: {image_type} */
+
 /* 古典衬线与神秘感字体 */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;700&display=swap');
 
-/* 全局字体和背景 */
-html, body, .stApp {
+/* 全局透明化和字体 */
+html, body, [data-testid="stAppViewContainer"] {{
     font-family: 'Noto Serif SC', 'Cinzel', serif;
-    background-color: #050505 !important;
     color: #eaddc5;
-}
+    background-color: #050505 !important;
+}}
 
-/* 隐藏 Streamlit 自带的右上角 Deploy 按钮和汉堡菜单 */
-/* 注意：不能隐藏整个 header，否则 Edge 浏览器会丢失侧边栏展开按钮 */
-[data-testid="stToolbar"] {
-    display: none !important;
-    visibility: hidden !important;
-}
-.stDeployButton,
-#MainMenu,
-button[kind="header"] {
-    display: none !important;
-    visibility: hidden !important;
-}
-/* 确保 header 本身可见（侧边栏按钮在其中），但去掉背景让其透明融入主题 */
-header[data-testid="stHeader"] {
-    background: transparent !important;
-    border-bottom: none !important;
-}
-
-/* 保护 Material Icons */
-.material-icons, .material-symbols-rounded, .stIcon, span[translate="no"], button[kind="header"] * {
-    font-family: "Material Symbols Rounded", "Material Icons", sans-serif !important;
-}
-
-/* 动态赛博网格背景，叠加纯黑金渐变 */
-.stApp {
-    background: 
-        linear-gradient(rgba(5, 5, 5, 0.9), rgba(5, 5, 5, 0.95)),
-        url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="100" y2="100" stroke="%23d4af37" stroke-width="0.5" stroke-opacity="0.1"/><line x1="100" y1="0" x2="0" y2="100" stroke="%23d4af37" stroke-width="0.5" stroke-opacity="0.1"/></svg>') !important;
-    background-size: 15px 15px !important;
+/* ============ 动态背景 & 核心容器 ============ */
+[data-testid="stAppViewContainer"] {{
+    background-image: 
+        radial-gradient(circle at 50% 50%, rgba(10, 8, 5, 0.3) 0%, rgba(5, 5, 5, 0.6) 100%),
+        url("data:image/png;base64,{bg_base64}") !important;
+    background-size: cover !important;
+    background-position: center !important;
     background-attachment: fixed !important;
-}
+    background-repeat: no-repeat !important;
+}}
 
-/* 侧边栏及顶栏深色化，去除 Streamlit 默认白边 */
-[data-testid="stSidebar"] {
-    background-color: rgba(8, 7, 7, 0.95) !important;
+/* 清除可能遮挡背景的中间层 */
+[data-testid="stMain"], [data-testid="stAppViewMainArea"], .stApp {{
+    background: transparent !important;
+}}
+
+/* 侧边栏及顶栏透明化处理 */
+header[data-testid="stHeader"], [data-testid="stHeader"] {{
+    background: transparent !important;
+}}
+
+[data-testid="stSidebar"] {{
+    background-color: rgba(8, 7, 7, 0.9) !important;
+    backdrop-filter: blur(15px);
     border-right: 1px solid rgba(212, 175, 55, 0.3) !important;
     box-shadow: 4px 0 15px rgba(0, 0, 0, 0.9);
-}
-[data-testid="stHeader"] {
-    background-color: transparent !important;
-}
+}}
+
+/* 隐藏 Streamlit 自带的右上角工具栏，但保留侧边栏按钮容器 */
+[data-testid="stToolbar"] {{
+    display: none !important;
+    visibility: hidden !important;
+}}
+.stDeployButton, #MainMenu, button[kind="header"] {{
+    display: none !important;
+    visibility: hidden !important;
+}}
 
 /* 发光标题特效 */
-h1, h2, h3 {
+h1, h2, h3 {{
     text-shadow: 0 0 10px rgba(212, 175, 55, 0.6), 0 0 20px rgba(212, 175, 55, 0.3);
     letter-spacing: 2px;
     font-weight: 600 !important;
     color: #f7e096 !important;
-}
-h1 {
+}}
+h1 {{
     text-align: center;
     border-bottom: 2px solid transparent;
     border-image: linear-gradient(90deg, transparent, #d4af37, transparent) 1;
     padding-bottom: 10px;
     margin-bottom: 25px;
-}
+}}
 
 /* 容器与卡片边界：发光特效与毛玻璃 */
 div[data-testid="metric-container"], 
 div[data-testid="stExpander"], 
 div[data-baseweb="card"],
-.stAlert {
+.stAlert {{
     background: rgba(15, 13, 11, 0.8) !important;
     border: 1px solid rgba(212, 175, 55, 0.3) !important;
     border-radius: 4px !important;
@@ -189,33 +173,33 @@ div[data-baseweb="card"],
     color: #eaddc5 !important;
     padding: 15px;
     transition: all 0.3s ease;
-}
+}}
 
-div[data-testid="stExpander"]:hover, div[data-testid="metric-container"]:hover {
+div[data-testid="stExpander"]:hover, div[data-testid="metric-container"]:hover {{
     box-shadow: 0 4px 25px rgba(212, 175, 55, 0.2), inset 0 0 20px rgba(212, 175, 55, 0.1) !important;
     border-color: rgba(212, 175, 55, 0.8) !important;
     transform: translateY(-2px);
-}
+}}
 
 /* 指标卡片（Metric）文字自适应与特效 */
-div[data-testid="metric-container"] {
+div[data-testid="metric-container"] {{
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
-}
-div[data-testid="metric-container"] label {
+}}
+div[data-testid="metric-container"] label {{
     color: #c4b59d !important;
     font-weight: 600 !important;
-}
-div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
+}}
+div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{
     color: #f7e096 !important;
     text-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
     font-size: 2rem !important;
     font-weight: 700 !important;
-}
+}}
 
 /* 按钮的黑金霓虹脉冲效果 */
-button[kind="primary"], button[data-testid="baseButton-primary"] {
+button[kind="primary"], button[data-testid="baseButton-primary"] {{
     background: linear-gradient(135deg, #1f1b13, #0a0908) !important;
     border: 1px solid #d4af37 !important;
     color: #d4af37 !important;
@@ -226,76 +210,81 @@ button[kind="primary"], button[data-testid="baseButton-primary"] {
     box-shadow: 0 0 15px rgba(212, 175, 55, 0.2), inset 0 0 10px rgba(212, 175, 55, 0.1) !important;
     position: relative;
     overflow: hidden;
-}
+}}
 
-button[kind="primary"]:hover, button[data-testid="baseButton-primary"]:hover {
+button[kind="primary"]:hover, button[data-testid="baseButton-primary"]:hover {{
     background: linear-gradient(135deg, #d4af37, #b08d28) !important;
     color: #000 !important;
     box-shadow: 0 0 25px rgba(212, 175, 55, 0.6), 0 0 50px rgba(212, 175, 55, 0.4) !important;
     transform: translateY(-2px) scale(1.02);
     text-shadow: none;
     border-color: #fff !important;
-}
+}}
 
 /* 次要按钮也有发光浮动效果 */
-button[kind="secondary"], button[data-testid="baseButton-secondary"] {
+button[kind="secondary"], button[data-testid="baseButton-secondary"] {{
     background: rgba(10, 9, 8, 0.5) !important;
     border: 1px solid rgba(212, 175, 55, 0.4) !important;
     color: #d4af37 !important;
     transition: all 0.3s ease;
     letter-spacing: 1px;
-}
-button[kind="secondary"]:hover, button[data-testid="baseButton-secondary"]:hover {
+}}
+button[kind="secondary"]:hover, button[data-testid="baseButton-secondary"]:hover {{
     background: rgba(212, 175, 55, 0.1) !important;
     border-color: #e5c158 !important;
     box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
     color: #fff !important;
     transform: translateY(-1px);
-}
+}}
 
 /* 分割线鎏金效果 */
-hr {
+hr {{
     border-bottom: 0 !important;
     height: 1px;
     background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.8), transparent) !important;
     margin: 2.5em 0;
-}
+}}
 
 /* 表格样式覆盖 */
-[data-testid="stDataFrame"] {
+[data-testid="stDataFrame"] {{
     border: 1px solid rgba(212, 175, 55, 0.4) !important;
     border-radius: 4px;
-}
-th {
+}}
+th {{
     background-color: #1a1814 !important;
     color: #f7e096 !important;
     border-bottom: 1px solid #d4af37 !important;
-}
-td {
+}}
+td {{
     background-color: #0a0908 !important;
     color: #eaddc5 !important;
     border-bottom: 1px solid rgba(212,175,55,0.1) !important;
-}
+}}
 
 /* 滚动条赛博化 */
-::-webkit-scrollbar {
+::-webkit-scrollbar {{
     width: 6px;
     height: 6px;
-}
-::-webkit-scrollbar-track {
+}}
+::-webkit-scrollbar-track {{
     background: #050505;
-}
-::-webkit-scrollbar-thumb {
+}}
+::-webkit-scrollbar-thumb {{
     background: rgba(212, 175, 55, 0.4);
     border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(212, 175, 55, 0.9);
-    box-shadow: 0 0 15px #d4af37;
-}
+    }}
+    ::-webkit-scrollbar-thumb:hover {{
+        background: rgba(212, 175, 55, 0.9);
+        box-shadow: 0 0 15px #d4af37;
+    }}
 
-/* 隐藏 Footer */
-footer {visibility: hidden;}
+    /* 保护图标字体 */
+    [data-testid="stSidebar"] *, .stIcon, .material-icons {{
+        font-family: inherit;
+    }}
+
+    /* 隐藏 Footer */
+    footer {{visibility: hidden;}}
 </style>
 """, unsafe_allow_html=True)
 

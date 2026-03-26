@@ -110,9 +110,7 @@ html, body, [class*="st-"] {{
 
 /* ============ 动态背景 ============ */
 .stApp {{
-    background-image: 
-        radial-gradient(circle at 50% 50%, rgba(10, 8, 5, 0.75) 0%, rgba(5, 5, 5, 0.98) 100%),
-        url("data:image/png;base64,{bg_base64}") !important;
+    background-image: url("data:image/png;base64,{bg_base64}") !important;
     background-size: cover !important;
     background-position: center !important;
     background-attachment: fixed !important;
@@ -123,7 +121,7 @@ html, body, [class*="st-"] {{
 /* ============ 主内容玻璃拟态面板 ============ */
 /* 不强制覆盖 padding，尊重 Streamlit 的移动端自适应 */
 .block-container {{
-    background: rgba(12, 10, 8, 0.8) !important;
+    background: rgba(12, 10, 8, 0.5) !important;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(212, 175, 55, 0.15) !important;
